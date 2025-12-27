@@ -141,7 +141,8 @@ def get_video_info():
                 if f.get('vcodec') == 'none': continue 
 
                 label = f"{height}p"
-                if height >= 2160: label = "4K (2160p)"
+                if height >= 4320: label = "8K (4320p)"
+                elif height >= 2160: label = "4K (2160p)"
                 elif height >= 1440: label = "2K (1440p)"
                 elif height >= 1080: label = "1080p(HD)"
                 
