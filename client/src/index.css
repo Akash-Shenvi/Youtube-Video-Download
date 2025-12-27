@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Custom Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+body {
+  background-color: #020617;
+  /* Slate 950 - to match/complement the app theme */
+  margin: 0;
+}
