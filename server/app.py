@@ -17,6 +17,20 @@ DOWNLOAD_DIR = os.path.join(os.getcwd(), 'downloads')
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
+CACHE_DIR = os.path.join(os.getcwd(), 'cache')
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
+
+# Legacy cookie support (optional)
+COOKIE_DIR = os.path.join(os.getcwd(), 'cookies')
+if not os.path.exists(COOKIE_DIR):
+    os.makedirs(COOKIE_DIR)
+COOKIE_FILE_PATH = os.path.join(COOKIE_DIR, 'cookies.txt')
+
+# Global dictionary to store download progress
+# Key: request_id, Value: dict with status info
+download_progress = {}
+
 # Global dictionary to store download progress
 # Key: request_id, Value: dict with status info
 download_progress = {}
@@ -96,6 +110,11 @@ def get_video_info():
             'quiet': True,
             'no_warnings': True,
         }
+        
+        # Use cookies if available for authentication (Legacy)
+        if os.path.exists(COOKIE_FILE_PATH):
+            ydl_opts['cookiefile'] = COOKIE_FILE_PATH
+        
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             duration_s = info.get('duration', 0)
@@ -266,6 +285,10 @@ def download_video():
             file_ext = 'mp4'
             download_name = f"video_{height}.mp4"
         
+        # Use cookies if available for authentication
+        if os.path.exists(COOKIE_FILE_PATH):
+            ydl_opts['cookiefile'] = COOKIE_FILE_PATH
+        
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
             
@@ -304,6 +327,85 @@ def download_video():
 
     except Exception as e:
         download_progress[request_id] = {'status': 'error', 'error': str(e)}
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/auth/check', methods=['GET'])
+def check_auth():
+    """Check if we have valid credentials (cookie)"""
+    has_cookies = os.path.exists(COOKIE_FILE_PATH)
+    return jsonify({
+        'authenticated': has_cookies,
+        'method': 'cookies' if has_cookies else 'none'
+    })
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    """Clear credentials"""
+    try:
+        if os.path.exists(COOKIE_FILE_PATH):
+            os.remove(COOKIE_FILE_PATH)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# --- Cookie Upload Endpoints ---
+
+@app.route('/api/cookies/upload', methods=['POST'])
+def upload_cookies():
+    """Upload YouTube cookies file for authentication"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Save the cookie file
+        file.save(COOKIE_FILE_PATH)
+        
+        # Validate cookie file format
+        try:
+            with open(COOKIE_FILE_PATH, 'r') as f:
+                content = f.read()
+                if not content.strip():
+                    os.remove(COOKIE_FILE_PATH)
+                    return jsonify({'error': 'Cookie file is empty'}), 400
+        except Exception as e:
+            if os.path.exists(COOKIE_FILE_PATH):
+                os.remove(COOKIE_FILE_PATH)
+            return jsonify({'error': f'Invalid cookie file: {str(e)}'}), 400
+        
+        return jsonify({
+            'success': True,
+            'message': 'Cookies uploaded successfully',
+            'authenticated': True
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cookies/status', methods=['GET'])
+def cookie_status():
+    # Redirect to generic auth check
+    return check_auth()
+
+@app.route('/api/cookies/delete', methods=['DELETE'])
+def delete_cookies():
+    """Delete stored cookies"""
+    try:
+        if os.path.exists(COOKIE_FILE_PATH):
+            os.remove(COOKIE_FILE_PATH)
+            return jsonify({
+                'success': True,
+                'message': 'Cookies deleted successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'No cookies found'
+            }), 404
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

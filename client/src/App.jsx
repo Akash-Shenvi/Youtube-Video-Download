@@ -1,12 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import {
   Search, Download, Loader2, AlertCircle, Cpu, HardDrive,
-  Activity, CheckCircle2, Film, Settings, Wifi, ArrowRight, Music
+  Activity, CheckCircle2, Film, Settings, Wifi, ArrowRight, Music, Shield
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import './App.css';
+import CookieManager from './components/CookieManager';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,22 @@ function App() {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(null);
   const [downloadMode, setDownloadMode] = useState('video'); // 'video' or 'audio'
+  const [authenticated, setAuthenticated] = useState(false);
+  const [showCookieManager, setShowCookieManager] = useState(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/api/cookies/status`);
+      setAuthenticated(response.data.authenticated);
+    } catch (err) {
+      console.error('Failed to check auth status:', err);
+    }
+  };
 
   const fetchInfo = async () => {
     if (!url) return;
@@ -161,7 +178,20 @@ function App() {
             </nav>
           </div>
 
-          <div className="relative z-10">
+          <div className="relative z-10 space-y-3">
+            {/* Authentication Status */}
+            <button
+              onClick={() => setShowCookieManager(true)}
+              className="w-full bg-[#1e2336] p-4 rounded-xl border border-white/5 hover:border-white/10 transition-colors text-left"
+            >
+              <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider font-semibold">YouTube Auth</p>
+              <div className={`flex items-center gap-2 ${authenticated ? 'text-green-400' : 'text-yellow-400'}`}>
+                <Shield className="w-4 h-4" />
+                <span className="text-sm font-medium">{authenticated ? 'Signed In' : 'Not Signed In'}</span>
+              </div>
+            </button>
+
+            {/* Server Status */}
             <div className="bg-[#1e2336] p-4 rounded-xl border border-white/5">
               <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider font-semibold">Server Status</p>
               <div className="flex items-center gap-2 text-green-400">
@@ -183,9 +213,20 @@ function App() {
               </div>
               <span className="text-lg font-bold tracking-tight text-white">Stream<span className="text-blue-500">Bolt</span></span>
             </div>
-            <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded-full border border-white/10">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-mono text-slate-300">ONLINE</span>
+            <div className="flex items-center gap-2">
+              {/* Auth Status - Mobile */}
+              <button
+                onClick={() => setShowCookieManager(true)}
+                className={`px-2 py-1 bg-white/5 rounded-full border border-white/10 flex items-center gap-1.5`}
+              >
+                <Shield className={`w-3 h-3 ${authenticated ? 'text-green-400' : 'text-yellow-400'}`} />
+                <span className="text-[10px] font-mono text-slate-300">{authenticated ? 'AUTH' : 'GUEST'}</span>
+              </button>
+              {/* Server Status */}
+              <div className="flex items-center gap-2 px-2 py-1 bg-white/5 rounded-full border border-white/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-mono text-slate-300">ONLINE</span>
+              </div>
             </div>
           </div>
 
@@ -421,6 +462,14 @@ function App() {
 
         </div>
       </div>
+
+      {/* Cookie Manager Modal */}
+      <CookieManager
+        isOpen={showCookieManager}
+        onClose={() => setShowCookieManager(false)}
+        authenticated={authenticated}
+        checkAuth={checkAuthStatus}
+      />
     </div>
   );
 }
