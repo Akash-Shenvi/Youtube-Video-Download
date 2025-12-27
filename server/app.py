@@ -302,26 +302,27 @@ def download_video():
             download_progress[request_id] = {'status': 'error', 'error': 'File not found'}
             return jsonify({'error': 'Download failed or file not found'}), 500
 
-        download_progress[request_id] = {'status': 'completed', 'progress': 100, 'stage': 'Sending to client...'}
+        # download_progress[request_id] = {'status': 'completed', 'progress': 100, 'stage': 'Sending to client...'}
 
-        @after_this_request
-        def remove_file(response):
-            """Delete the file immediately after sending to client"""
-            def delayed_delete():
-                time.sleep(1)  # Small delay to ensure file transfer completes
-                try:
-                    if os.path.exists(downloaded_file):
-                        os.remove(downloaded_file)
-                        print(f"Successfully deleted: {downloaded_file}")
-                    # Clean up progress dict
-                    if request_id in download_progress:
-                        del download_progress[request_id]
-                except Exception as e:
-                    print(f"Error removing file: {e}")
+        # @after_this_request
+        # def remove_file(response):
+        #     """Delete the file immediately after sending to client"""
+        #     def delayed_delete():
+        #         time.sleep(1)  # Small delay to ensure file transfer completes
+        #         try:
+        #             if os.path.exists(downloaded_file):
+        #                 # User requested to KEEP files
+        #                 # os.remove(downloaded_file)
+        #                 print(f"File kept on server: {downloaded_file}")
+        #             # Clean up progress dict
+        #             if request_id in download_progress:
+        #                 del download_progress[request_id]
+        #         except Exception as e:
+        #             print(f"Error removing file: {e}")
             
-            # Run deletion in background thread
-            threading.Thread(target=delayed_delete, daemon=True).start()
-            return response
+        #     # Run deletion in background thread
+        #     threading.Thread(target=delayed_delete, daemon=True).start()
+        #     return response
 
         return send_file(downloaded_file, as_attachment=True, download_name=download_name)
 
@@ -343,7 +344,8 @@ def logout():
     """Clear credentials"""
     try:
         if os.path.exists(COOKIE_FILE_PATH):
-            os.remove(COOKIE_FILE_PATH)
+            # os.remove(COOKIE_FILE_PATH) # User requested to KEEP manual cookies
+            pass
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -410,8 +412,9 @@ def delete_cookies():
 
 if __name__ == '__main__':
     # Start background cleanup thread
-    cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
-    cleanup_thread.start()
+    # cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
+    # cleanup_thread.start() # Disabled to keep files
+    print("Background file cleanup thread DISABLED (keeping files forever)")
     print("Started background file cleanup thread (runs every 30 minutes)")
     
     # threaded=True is required so that the progress polling requests 
