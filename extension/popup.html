@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>StreamBolt Downloader</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Stream<span class="highlight">Bolt</span></h1>
+            <div class="status-badge" id="status-badge">Ready</div>
+        </header>
+
+        <div class="video-info hidden" id="video-info">
+            <img id="thumbnail" src="" alt="Thumbnail">
+            <h2 id="video-title">Loading...</h2>
+            <p id="video-author">Author</p>
+        </div>
+
+        <div class="controls" id="controls">
+            <button id="scan-btn" class="btn primary">Scan Video</button>
+        </div>
+
+        <div class="format-list hidden" id="format-list">
+            <!-- formats injected here -->
+        </div>
+
+        <div id="error-msg" class="error hidden"></div>
+    </div>
+    <script src="lib/ffmpeg.min.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+{
+    "manifest_version": 3,
+    "name": "StreamBolt Extension",
+    "version": "1.0",
+    "description": "Download YouTube videos directly from the browser.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "downloads"
+    ],
+    "host_permissions": [
+        "*://*.youtube.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Download Video"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/watch*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "lib/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}
