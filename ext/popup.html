@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="header">
+    <h1 class="logo">StreamBolt</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p class="loading-text">Analyzing video...</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="error" class="error-container">
+    <p id="error-msg" class="error-text">Something went wrong.</p>
+  </div>
+
+  <!-- Video Content -->
+  <div id="content" style="width: 100%; display: none;">
+    <div class="video-info">
+      <div class="thumbnail-container">
+        <img id="thumbnail" class="thumbnail" src="" alt="Video Thumbnail">
+      </div>
+      <p id="video-title" class="video-title">Video Title</p>
+    </div>
+
+    <div id="formats-container" class="formats-list">
+      <!-- Buttons will be injected here -->
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
